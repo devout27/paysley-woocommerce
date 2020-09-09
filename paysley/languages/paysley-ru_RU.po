@@ -1,0 +1,109 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Paysley 1.0.0\n"
+"POT-Creation-Date: 2020-04-02 15:19+0700\n"
+"PO-Revision-Date: 2020-09-01 08:23+0700\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.1\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: includes/class-paysley.php:26 includes/class-paysley.php:73
+msgid "Paysley"
+msgstr "Paysley"
+
+#: includes/class-paysley.php:27
+msgid ""
+"Paysley redirects customers to Paysley to enter their payment information."
+msgstr ""
+"Paysley перенаправляет клиентов на Paysley, чтобы ввести их платежную "
+"информацию."
+
+#: includes/class-paysley.php:64
+msgid "Enable/Disable"
+msgstr "Включение/отключение"
+
+#: includes/class-paysley.php:65
+msgid "Enable Paysley"
+msgstr "Включить Paysley"
+
+#: includes/class-paysley.php:70
+msgid "Title"
+msgstr "Название"
+
+#: includes/class-paysley.php:72
+msgid "This is the title which the user sees during checkout."
+msgstr "Это название, которое пользователь видит во время проверки."
+
+#: includes/class-paysley.php:77
+msgid "Description"
+msgstr "Описание"
+
+#: includes/class-paysley.php:79
+msgid "This is the description which the user sees during checkout."
+msgstr "Это описание, которое пользователь видит во время оформления заказа."
+
+#: includes/class-paysley.php:84
+msgid "Access Key"
+msgstr "Ключ доступа"
+
+#: includes/class-paysley.php:86
+msgid ""
+"* This is the access key, received from Paysley developer portal. "
+"( required )"
+msgstr ""
+"* Это ключ доступа, полученный с портала разработчиков Paysley. "
+"( обязательно )"
+
+#: includes/class-paysley.php:90
+msgid "Enable Logging"
+msgstr "Включить ведение журнала"
+
+#: includes/class-paysley.php:92
+msgid "Enable transaction logging for paysley."
+msgstr "Включить ведение журнала транзакций для paysley."
+
+#: includes/class-paysley.php:105
+msgid "Please enter an access key!"
+msgstr "Введите ключ доступа!"
+
+#: includes/class-paysley.php:209
+msgid "We are sorry, currency is not supported. Please contact us."
+msgstr "К сожалению, валюта не поддерживается. Пожалуйста, свяжитесь с нами."
+
+#: includes/class-paysley.php:212
+msgid "Error while Processing Request: please try again."
+msgstr "Ошибка при обработке запроса: попробуйте еще раз."
+
+#: includes/class-paysley.php:291
+msgid "Paysley partial refund successfull."
+msgstr "Частичный возврат средств Paysley успешно."
+
+#: includes/class-paysley.php:297 includes/class-paysley.php:330
+msgid "Refund Failed"
+msgstr "Сбой возврата"
+
+#: includes/class-paysley.php:325
+msgid "Paysley full refund successfull."
+msgstr "Paysley полный возврат средств успешно."
+
+#: includes/class-paysley.php:356
+msgid ""
+"Paysley notes: You still have amount to be refunded, because Merchant use "
+"tax/tip when customer paid. Please contact the merchant to refund the tax/"
+"tip amount."
+msgstr ""
+"Примечания Paysley: у вас все еще есть сумма, подлежащая возврату, потому "
+"что Торговец использует налог/чаевые при оплате клиентом. Пожалуйста, "
+"свяжитесь с продавцом, чтобы вернуть сумму налога/чаевые."
+
+#: paysley.php:92
+msgid "Settings"
+msgstr "Настройки"

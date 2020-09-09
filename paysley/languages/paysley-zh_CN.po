@@ -1,0 +1,104 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Paysley 1.0.0\n"
+"POT-Creation-Date: 2020-04-02 15:22+0700\n"
+"PO-Revision-Date: 2020-09-01 08:23+0700\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.1\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: includes/class-paysley.php:26 includes/class-paysley.php:73
+msgid "Paysley"
+msgstr "Paysley"
+
+#: includes/class-paysley.php:27
+msgid ""
+"Paysley redirects customers to Paysley to enter their payment information."
+msgstr "Paysley 将客户重定向到 Mobi付款输入他们的付款信息。"
+
+#: includes/class-paysley.php:64
+msgid "Enable/Disable"
+msgstr "启用/禁用"
+
+#: includes/class-paysley.php:65
+msgid "Enable Paysley"
+msgstr "启用 Paysley"
+
+#: includes/class-paysley.php:70
+msgid "Title"
+msgstr "标题"
+
+#: includes/class-paysley.php:72
+msgid "This is the title which the user sees during checkout."
+msgstr "这是用户在结账时看到的标题。"
+
+#: includes/class-paysley.php:77
+msgid "Description"
+msgstr "描述"
+
+#: includes/class-paysley.php:79
+msgid "This is the description which the user sees during checkout."
+msgstr "这是用户在结账时看到的描述。"
+
+#: includes/class-paysley.php:84
+msgid "Access Key"
+msgstr "访问密钥"
+
+#: includes/class-paysley.php:86
+msgid ""
+"* This is the access key, received from Paysley developer portal. "
+"( required )"
+msgstr "* 这是从 Paysley 开发人员门户网站接收的访问密钥 ( 必填项 )"
+
+#: includes/class-paysley.php:90
+msgid "Enable Logging"
+msgstr "启用日志记录"
+
+#: includes/class-paysley.php:92
+msgid "Enable transaction logging for paysley."
+msgstr "启用 paysley 的事务日志记录。"
+
+#: includes/class-paysley.php:105
+msgid "Please enter an access key!"
+msgstr "请输入访问密钥!"
+
+#: includes/class-paysley.php:209
+msgid "We are sorry, currency is not supported. Please contact us."
+msgstr "很抱歉，不支持货币。 请联系我们。"
+
+#: includes/class-paysley.php:212
+msgid "Error while Processing Request: please try again."
+msgstr "处理请求时出错：请重试。"
+
+#: includes/class-paysley.php:291
+msgid "Paysley partial refund successfull."
+msgstr "Paysley 部分退款成功。"
+
+#: includes/class-paysley.php:297 includes/class-paysley.php:330
+msgid "Refund Failed"
+msgstr "退款失败"
+
+#: includes/class-paysley.php:325
+msgid "Paysley full refund successfull."
+msgstr "Paysley 全额退款成功。"
+
+#: includes/class-paysley.php:356
+msgid ""
+"Paysley notes: You still have amount to be refunded, because Merchant use "
+"tax/tip when customer paid. Please contact the merchant to refund the tax/"
+"tip amount."
+msgstr ""
+"Paysley 备注：您仍有退款金额，因为卖家在买家付款时使用税费/小费。 请联系商"
+"家以退还税款/小费金额。"
+
+#: paysley.php:92
+msgid "Settings"
+msgstr "设置"

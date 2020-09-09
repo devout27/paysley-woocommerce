@@ -1,0 +1,107 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Paysley 1.0.0\n"
+"POT-Creation-Date: 2020-04-02 15:06+0700\n"
+"PO-Revision-Date: 2020-09-01 08:21+0700\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.1\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: includes/class-paysley.php:26 includes/class-paysley.php:73
+msgid "Paysley"
+msgstr "Paysley"
+
+#: includes/class-paysley.php:27
+msgid ""
+"Paysley redirects customers to Paysley to enter their payment information."
+msgstr "Paysley ohjaa asiakkaat Paysley-tiliin syöttämään maksutietonsa."
+
+#: includes/class-paysley.php:64
+msgid "Enable/Disable"
+msgstr "Ota käyttöön/poista käytöstä"
+
+#: includes/class-paysley.php:65
+msgid "Enable Paysley"
+msgstr "Ota Paysley käyttöön"
+
+#: includes/class-paysley.php:70
+msgid "Title"
+msgstr "Nimike"
+
+#: includes/class-paysley.php:72
+msgid "This is the title which the user sees during checkout."
+msgstr "Tämä on otsikko, jonka käyttäjä näkee kassalla."
+
+#: includes/class-paysley.php:77
+msgid "Description"
+msgstr "Kuvaus"
+
+#: includes/class-paysley.php:79
+msgid "This is the description which the user sees during checkout."
+msgstr "Tämä on kuvaus, jonka käyttäjä näkee kassalla."
+
+#: includes/class-paysley.php:84
+msgid "Access Key"
+msgstr "Avaimen käyttöoikeus"
+
+#: includes/class-paysley.php:86
+msgid ""
+"* This is the access key, received from Paysley developer portal. "
+"( required )"
+msgstr ""
+"* Tämä on käyttöavain, vastaanotettu Paysley kehittäjäportaalista. "
+"( vaaditaan )"
+
+#: includes/class-paysley.php:90
+msgid "Enable Logging"
+msgstr "Ota loki käyttöön"
+
+#: includes/class-paysley.php:92
+msgid "Enable transaction logging for paysley."
+msgstr "Ota tapahtumakirjaus käyttöön paysley."
+
+#: includes/class-paysley.php:105
+msgid "Please enter an access key!"
+msgstr "Syötä avain!"
+
+#: includes/class-paysley.php:209
+msgid "We are sorry, currency is not supported. Please contact us."
+msgstr "Olemme pahoillamme, valuuttaa ei tueta. Ota yhteyttä."
+
+#: includes/class-paysley.php:212
+msgid "Error while Processing Request: please try again."
+msgstr "Virhe käsiteltäessä pyyntöä: yritä uudelleen."
+
+#: includes/class-paysley.php:291
+msgid "Paysley partial refund successfull."
+msgstr "Paysley osittainen palautus onnistunut."
+
+#: includes/class-paysley.php:297 includes/class-paysley.php:330
+msgid "Refund Failed"
+msgstr "Hyvitys epäonnistui"
+
+#: includes/class-paysley.php:325
+msgid "Paysley full refund successfull."
+msgstr "Paysley täyden hyvityksen onnistuneen."
+
+#: includes/class-paysley.php:356
+msgid ""
+"Paysley notes: You still have amount to be refunded, because Merchant use "
+"tax/tip when customer paid. Please contact the merchant to refund the tax/"
+"tip amount."
+msgstr ""
+"Paysley -muistiinpanot: Sinulla on vielä palautettava summa, koska "
+"kauppias käyttää veroa tai vihjettä asiakkaan maksettavaksi. Ota yhteyttä "
+"kauppiaan hyvittääkseen/vihjeen summan."
+
+#: paysley.php:92
+msgid "Settings"
+msgstr "Asetukset"

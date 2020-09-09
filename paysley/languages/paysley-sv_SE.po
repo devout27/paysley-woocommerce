@@ -1,0 +1,108 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Paysley 1.0.0\n"
+"POT-Creation-Date: 2020-04-02 15:20+0700\n"
+"PO-Revision-Date: 2020-09-01 08:23+0700\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sv_SE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.1\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: includes/class-paysley.php:26 includes/class-paysley.php:73
+msgid "Paysley"
+msgstr "Paysley"
+
+#: includes/class-paysley.php:27
+msgid ""
+"Paysley redirects customers to Paysley to enter their payment information."
+msgstr ""
+"Paysley omdirigerar kunder till Paysley för att ange deras "
+"betalningsinformation."
+
+#: includes/class-paysley.php:64
+msgid "Enable/Disable"
+msgstr "Aktivera/inaktivera"
+
+#: includes/class-paysley.php:65
+msgid "Enable Paysley"
+msgstr "Aktivera Paysley"
+
+#: includes/class-paysley.php:70
+msgid "Title"
+msgstr "Titel"
+
+#: includes/class-paysley.php:72
+msgid "This is the title which the user sees during checkout."
+msgstr "Detta är titeln som användaren ser under kassan."
+
+#: includes/class-paysley.php:77
+msgid "Description"
+msgstr "Beskrivning"
+
+#: includes/class-paysley.php:79
+msgid "This is the description which the user sees during checkout."
+msgstr "Detta är den beskrivning som användaren ser under kassan."
+
+#: includes/class-paysley.php:84
+msgid "Access Key"
+msgstr "Åtkomstnyckel"
+
+#: includes/class-paysley.php:86
+msgid ""
+"* This is the access key, received from Paysley developer portal. "
+"( required )"
+msgstr ""
+"* Detta är åtkomstnyckeln, mottagen från Paysley utvecklarportal. ( krävs )"
+
+#: includes/class-paysley.php:90
+msgid "Enable Logging"
+msgstr "Aktivera loggning"
+
+#: includes/class-paysley.php:92
+msgid "Enable transaction logging for paysley."
+msgstr "Aktivera transaktionsloggning för paysley."
+
+#: includes/class-paysley.php:105
+msgid "Please enter an access key!"
+msgstr "Ange en åtkomstnyckel!"
+
+#: includes/class-paysley.php:209
+msgid "We are sorry, currency is not supported. Please contact us."
+msgstr "Vi är ledsna, valuta stöds inte. Kontakta oss."
+
+#: includes/class-paysley.php:212
+msgid "Error while Processing Request: please try again."
+msgstr "Fel vid Bearbetningsförfrågan: Försök igen."
+
+#: includes/class-paysley.php:291
+msgid "Paysley partial refund successfull."
+msgstr "Paysley partiell återbetalning framgångsrik."
+
+#: includes/class-paysley.php:297 includes/class-paysley.php:330
+msgid "Refund Failed"
+msgstr "Återbetalning misslyckades"
+
+#: includes/class-paysley.php:325
+msgid "Paysley full refund successfull."
+msgstr "Paysley full återbetalning framgångsrik."
+
+#: includes/class-paysley.php:356
+msgid ""
+"Paysley notes: You still have amount to be refunded, because Merchant use "
+"tax/tip when customer paid. Please contact the merchant to refund the tax/"
+"tip amount."
+msgstr ""
+"Paysley noter: Du har fortfarande belopp som ska återbetalas, eftersom "
+"Merchant använder skatt/tips när kunden betalas. Kontakta handlaren för att "
+"återbetala skatten/tipsbeloppet."
+
+#: paysley.php:92
+msgid "Settings"
+msgstr "Inställningar"
