@@ -5,7 +5,7 @@
  * Description:          Receive payments using Paysley.
  * Version:              1.0.0
  * Requires at least:    5.0
- * Tested up to:         5.3.2
+ * Tested up to:         5.5.3
  * WC requires at least: 3.9.0
  * WC tested up to:      4.0.1
  * Requires PHP:         7.0

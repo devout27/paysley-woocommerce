@@ -1,34 +1,44 @@
 === Paysley ===
 
 Contributors: paysley
-Tags: credit card, paysley, google pay, apple pay, nedbank, payment method, payment gateway
+Tags: credit card, paysley, google pay, apple pay, payment method, payment gateway
 Requires at least: 5.0
-Tested up to: 5.3.2
+Tested up to: 5.5.3
 Requires PHP: 7.0
 Stable tag: 1.0.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
+== Screenshots ==
+1. Payment Settings
+2. Chekout Page
+3. Payment Page
+4. Input Card Number
+5. Payment Success
+6. Success Page
+
 Payments over multiple channels
 
 == Description ==
 
-= Because you want more than just a shopping cart experience =
+= WHEN YOU NEED MORE THAN JUST A SHOPPING CART PAYMENT SOLUTION =
 
-* Take payments online and offline
+* Accept payments online, or accept payments offline using our secure Virtual Terminal
 * Use your preferred merchant service provider
-* Promote directly on Facebook, LinkedIn and Twitter
+* Promote directly on Facebook, LinkedIn, and Twitter, or with WhatsApp
 
 = Changing the way you take card-not-present payments. =
 
-Paysley is a single card-not-present payment platform that allows you to accept payments in a variety of ways: SEPA, Paypal, Credit/Debit Card, Nedbank EFT, google pay, apple pay and more. Add Paysley to your shopping cart for easy and secure payments during checkout, or use your Paysley portal to deliver payment requests to your customers using text messaging (SMS), email, social media, and QR codes.
+Paysley is a multifunctional payment solution that allows you to accept payments in various ways: Paypal, Credit/Debit Card,Direct Debit, Google Pay, Apple Pay, and more. Add Paysley to your shopping cart for easy and secure payments duringcheckout, or use your Paysley portal to deliver payment requests to your customers using text messaging (SMS), email,social media, and QR codes.
 
-Paysley is the best payment solution available for merchants who need payment flexibility, or if your business has grown beyond just eCommerce and the service you offer requires you to take payments anywhere, anytime.
+Paysley is the best payment solution available for merchants who need payment flexibility or when your business has grownbeyond just eCommerce, and you want to take payments anywhere, anytime.
  
 == Features ==
 
-* Accept payments via Paysley.
-* Partial / Full refund.
+* Automatic invoicing & receipts
+* Manage partial or full refunds
+* Instant reporting
+* Sale campaigns on social media
  
 == Localization ==
 
@@ -72,8 +82,11 @@ The manual installation method involves downloading our plugin and uploading it 
 
 = Setup =
 
-After installed the plugin, you need to go to plugin settings and input an access key that received from Paysley developer portal.
-And please make sure Merchant has created POS Link with Reference number type Customer Input and sets avaiable currencies.
+After installing the plugin, go to the plugin settings and enter your Access Key. You can generate an Access Key on the Paysley developerportal at ​[https://developer.paysley.com/​](https://developer.paysley.com/​).
+
+For more information on how to create an Access Key, follow this link [https://help.paysley.com/api-integration/](https://help.paysley.com/api-integration/)
+
+Important:​ Before you set up your plugin, make sure you or the Merchant created a POS Link in the Paysley user portal, with the Referencenumber type selected as "Customer Input," and remember to set the available currencies.
 
 == Frequently Asked Questions ==
 
@@ -88,6 +101,9 @@ Yes, it does - production and sandbox mode is driven by the API Access keys you 
 = Where can I can get support? =
 
 You can contact developer with this [link](https://paysley.com/contact/).
+
+== Contributors & Developers ==
+Paysley is a cloud payment solution and offers free access to its developer portal and API. The following people havecontributed to this plugin.
 
 == Screenshots ==
 

@@ -42,7 +42,7 @@ class Paysley_API {
 	 *
 	 * @var string
 	 */
-	public static $api_test_url = 'https://stagetest.paysley.io/v2';
+	public static $api_test_url = 'https://test.paysley.io/v2';
 
 	/**
 	 * Get API url
