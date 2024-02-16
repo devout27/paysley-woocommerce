@@ -3,9 +3,9 @@
 Contributors: paysley
 Tags: credit card, paysley, google pay, apple pay, payment method, payment gateway
 Requires at least: 5.0
-Tested up to: 5.5.3
+Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 1.0.0
+Stable tag: 1.0.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -29,9 +29,9 @@ Payments over multiple channels
 
 = Changing the way you take card-not-present payments. =
 
-Paysley is a multifunctional payment solution that allows you to accept payments in various ways: Paypal, Credit/Debit Card,Direct Debit, Google Pay, Apple Pay, and more. Add Paysley to your shopping cart for easy and secure payments duringcheckout, or use your Paysley portal to deliver payment requests to your customers using text messaging (SMS), email,social media, and QR codes.
+Paysley is a multifunctional payment solution that allows you to accept payments in various ways: Paypal, Credit/Debit Card, Direct Debit, Google Pay, Apple Pay, and more. Add Paysley to your shopping cart for easy and secure payments during checkout, or use your Paysley portal to deliver payment requests to your customers using text messaging (SMS), email, social media, and QR codes.
 
-Paysley is the best payment solution available for merchants who need payment flexibility or when your business has grownbeyond just eCommerce, and you want to take payments anywhere, anytime.
+Paysley is the best payment solution available for merchants who need payment flexibility or when your business has grown beyond just eCommerce, and you want to take payments anywhere, anytime.
  
 == Features ==
 
@@ -72,6 +72,8 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 In the search field type “Paysley” and click Search Plugins. Once you’ve found our plugin you can view details about it such as the point release, rating, and description. Most importantly, of course, you can install it by simply clicking "Install Now", then "Activate".
 
+From the WordPress dashboard, click Plugins > Installed Plugins. Under Paysley, click ‘Settings’. Here you will need to input your Paysley Production Access Key, and check the box to Enable Paysley.
+
 = Manual installation =
 
 The manual installation method involves downloading our plugin and uploading it to your web server via your favorite FTP application. The WordPress codex contains [instructions on how to do this here](http://codex.wordpress.org/Managing_Plugins#Manual_Plugin_Installation).
@@ -103,7 +105,7 @@ Yes, it does - production and sandbox mode is driven by the API Access keys you 
 You can contact developer with this [link](https://paysley.com/contact/).
 
 == Contributors & Developers ==
-Paysley is a cloud payment solution and offers free access to its developer portal and API. The following people havecontributed to this plugin.
+"Paysley" is open source software and offers free access to its developer portal and API. The following people have contributed to this plugin.
 
 == Screenshots ==
 
@@ -116,3 +118,10 @@ Paysley is a cloud payment solution and offers free access to its developer port
 
 = 1.0.0 2020-04-06 =
 * Initial release
+
+= 1.0.1 - 2021-01-07 =
+* compatibility test wordpress 5.6 & woocoomerce 4.8.0
+
+= 1.0.2 - 2022-01-29 =
+* fix order status for virtual product and download product
+* compatibility test wordpress 5.9
