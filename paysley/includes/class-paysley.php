@@ -1,95 +1,109 @@
 <?php
+
 /**
  * Paysley Class
  *
  * @package Paysley
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
 	exit; // Exit if accessed directly.
 }
 
-require_once dirname( __FILE__ ) . '/class-paysley-api.php';
+require_once dirname(__FILE__) . '/class-paysley-api.php';
 
 /**
  * Paysley class.
  *
  * @extends WC_Payment_Gateway
  */
-class Paysley extends WC_Payment_Gateway {
+class Paysley extends WC_Payment_Gateway
+{
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
+	public function __construct()
+	{
 		$this->id = 'paysley';
 		// title for backend.
-		$this->method_title       = __( 'Paysley', 'paysley' );
-		$this->method_description = __( 'Paysley redirects customers to Paysley to enter their payment information.', 'paysley' );
+		$this->method_title       = __('Paysley', 'paysley');
+		$this->method_description = __('Paysley redirects customers to Paysley to enter their payment information.', 'paysley');
 		// title for frontend.
-		$this->icon     = WP_PLUGIN_URL . '/' . plugin_basename( dirname( dirname( __FILE__ ) ) ) . '/assets/img/py-logo.png';
-		$this->supports = array( 'refunds' );
+		$this->icon     = WP_PLUGIN_URL . '/' . plugin_basename(dirname(dirname(__FILE__))) . '/assets/img/py-logo.png';
+		$this->supports = array('refunds');
+		$this->has_fields = false;
+
+		$this->supports = array(
+			'products'
+		);
 
 		// setup backend configuration.
 		$this->init_form_fields();
 		$this->init_settings();
 
-		// save woocomerce settings checkout tab section paysley.
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		// validate form fields when saved.
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'validate_admin_options' ) );
-		// use hook to receive response url.
-		add_action( 'woocommerce_before_thankyou', array( $this, 'response_page' ) );
-		// use hook to do full refund.
-		add_action( 'woocommerce_order_edit_status', array( $this, 'process_full_refund' ), 10, 2 );
-		// use hook to add notes when payment amount greater than order amount.
-		add_action( 'woocommerce_order_status_changed', array( $this, 'add_full_refund_notes' ), 10, 3 );
 
-		$this->title          = $this->get_option( 'title' );
-		$this->description    = $this->get_option( 'description' );
+
+		$this->title          = $this->get_option('title');
+		$this->description    = $this->get_option('description');
 		$this->payment_type   = 'DB';
-		$this->access_key     = $this->get_option( 'access_key' );
-		$this->enable_logging = 'yes' === $this->get_option( 'enable_logging' );
-		$this->is_test_mode   = 'mp_live' !== substr( $this->access_key, 0, 7 );
+		$this->access_key     = $this->get_option('access_key');
+		$this->enable_logging = 'yes' === $this->get_option('enable_logging');
+		// $this->is_test_mode   = 'mp_live' !== substr( $this->access_key, 0, 7 );
+		$this->is_test_mode   = 'py_live' !== substr($this->access_key, 0, 7);
 		$this->init_api();
+
+
+		// save woocomerce settings checkout tab section paysley.
+		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+		// validate form fields when saved.
+		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'validate_admin_options'));
+		// use hook to receive response url.
+		add_action('woocommerce_before_thankyou', array($this, 'response_page'));
+		// use hook to do full refund.
+		add_action('woocommerce_order_edit_status', array($this, 'process_full_refund'), 10, 2);
+		// use hook to add notes when payment amount greater than order amount.
+		add_action('woocommerce_order_status_changed', array($this, 'add_full_refund_notes'), 10, 3);
 	}
+
 
 	/**
 	 * Override function.
 	 * Initialise settings form fields for paysley
 	 * Add an array of fields to be displayed on the paysley settings screen.
 	 */
-	public function init_form_fields() {
+	public function init_form_fields()
+	{
 		$this->form_fields = array(
 			'enabled'        => array(
-				'title'   => __( 'Enable/Disable', 'paysley' ),
-				'label'   => __( 'Enable Paysley', 'paysley' ),
+				'title'   => __('Enable/Disable', 'paysley'),
+				'label'   => __('Enable Paysley', 'paysley'),
 				'type'    => 'checkbox',
 				'default' => 'no',
 			),
 			'title'          => array(
-				'title'       => __( 'Title', 'paysley' ),
+				'title'       => __('Title', 'paysley'),
 				'type'        => 'text',
-				'description' => __( 'This is the title which the user sees during checkout.', 'paysley' ),
-				'default'     => __( 'Paysley', 'paysley' ),
+				'description' => __('This is the title which the user sees during checkout.', 'paysley'),
+				'default'     => __('Paysley', 'paysley'),
 				'desc_tip'    => true,
 			),
 			'description'    => array(
-				'title'       => __( 'Description', 'paysley' ),
+				'title'       => __('Description', 'paysley'),
 				'type'        => 'text',
-				'description' => __( 'This is the description which the user sees during checkout.', 'paysley' ),
+				'description' => __('This is the description which the user sees during checkout.', 'paysley'),
 				'default'     => 'Pay with Paysley',
 				'desc_tip'    => true,
 			),
 			'access_key'     => array(
-				'title'       => __( 'Access Key', 'paysley' ),
+				'title'       => __('Access Key', 'paysley'),
 				'type'        => 'password',
-				'description' => __( '* This is the access key, received from Paysley developer portal. ( required )', 'paysley' ),
+				'description' => __('* This is the access key, received from Paysley developer portal. ( required )', 'paysley'),
 				'default'     => '',
 			),
 			'enable_logging' => array(
-				'title'   => __( 'Enable Logging', 'paysley' ),
+				'title'   => __('Enable Logging', 'paysley'),
 				'type'    => 'checkbox',
-				'label'   => __( 'Enable transaction logging for paysley.', 'paysley' ),
+				'label'   => __('Enable transaction logging for paysley.', 'paysley'),
 				'default' => 'no',
 			),
 		);
@@ -98,11 +112,12 @@ class Paysley extends WC_Payment_Gateway {
 	/**
 	 * Show error notice if access key is empty.
 	 */
-	public function validate_admin_options() {
+	public function validate_admin_options()
+	{
 		$post_data  = $this->get_post_data();
-		$access_key = $this->get_field_value( 'access_key', $this->form_fields, $post_data );
-		if ( empty( $access_key ) ) {
-			WC_Admin_Settings::add_error( __( 'Please enter an access key!', 'paysley' ) );
+		$access_key = $this->get_field_value('access_key', $this->form_fields, $post_data);
+		if (empty($access_key)) {
+			WC_Admin_Settings::add_error(__('Please enter an access key!', 'paysley'));
 		}
 	}
 
@@ -112,12 +127,12 @@ class Paysley extends WC_Payment_Gateway {
 	 *
 	 * @return bool
 	 */
-	public function is_available() {
+	public function is_available()
+	{
 		$is_available = parent::is_available();
-		if ( empty( $this->access_key ) ) {
+		if (empty($this->access_key)) {
 			$is_available = false;
 		}
-
 		return $is_available;
 	}
 
@@ -132,17 +147,18 @@ class Paysley extends WC_Payment_Gateway {
 	 *
 	 * @return mixed Property value
 	 */
-	public static function get_order_prop( $order, $prop ) {
-		switch ( $prop ) {
+	public static function get_order_prop($order, $prop)
+	{
+		switch ($prop) {
 			case 'order_total':
-				$getter = array( $order, 'get_total' );
+				$getter = array($order, 'get_total');
 				break;
 			default:
-				$getter = array( $order, 'get_' . $prop );
+				$getter = array($order, 'get_' . $prop);
 				break;
 		}
 
-		return is_callable( $getter ) ? call_user_func( $getter ) : $order->{ $prop };
+		return is_callable($getter) ? call_user_func($getter) : $order->{$prop};
 	}
 
 	/**
@@ -153,19 +169,21 @@ class Paysley extends WC_Payment_Gateway {
 	 * @param string $message Log message.
 	 * @param string $level Log level.
 	 */
-	public function log( $message, $level = 'info' ) {
-		if ( $this->enable_logging ) {
-			if ( empty( $this->logger ) ) {
+	public function log($message, $level = 'info')
+	{
+		if ($this->enable_logging) {
+			if (empty($this->logger)) {
 				$this->logger = new WC_Logger();
 			}
-			$this->logger->add( 'paysley-' . $level, $message );
+			$this->logger->add('paysley-' . $level, $message);
 		}
 	}
 
 	/**
 	 * Init the API class and set the access key.
 	 */
-	protected function init_api() {
+	protected function init_api()
+	{
 		Paysley_API::$access_key   = $this->access_key;
 		Paysley_API::$is_test_mode = $this->is_test_mode;
 	}
@@ -179,39 +197,62 @@ class Paysley extends WC_Payment_Gateway {
 	 * @return string
 	 * @throws \Exception Error.
 	 */
-	protected function get_payment_url( $order_id, $transaction_id ) {
-		$order      = wc_get_order( $order_id );
+	protected function get_payment_url($order_id, $transaction_id)
+	{
+		// $order      = wc_get_order( $order_id );
+		$order      = new WC_Order($order_id);
 		$currency   = $order->get_currency();
-		$amount     = $this->get_order_prop( $order, 'order_total' );
-		$token      = $this->generate_token( $order_id, $currency );
-		$return_url = $this->get_return_url( $order );
+		$amount     = $this->get_order_prop($order, 'order_total');
+		$token      = $this->generate_token($order_id, $currency);
+		$return_url = $this->get_return_url($order);
 
-		$body                     = array(
-			'reference'    => $transaction_id,
+		
+
+		$body = array(
+			'reference_number'    => $transaction_id,
 			'payment_type' => $this->payment_type,
+			'request_methods' => ["WEB"],
+			'email' =>  $order->get_billing_email(),
+			'mobile_number' => $order->get_billing_phone(),
+			'customer_first_name' => $order->get_billing_first_name(),
+			'customer_last_name' => $order->get_billing_last_name(),
 			'currency'     => $currency,
 			'amount'       => (float) $amount,
-			'cart_items'   => $this->get_cart_items( $order_id ),
+			'cart_items'   => $this->get_cart_items($order_id),
+			'fixed_amount' => true,
 			'cancel_url'   => wc_get_checkout_url(),
-			'return_url'   => $return_url,
+			'redirect_url'   => $return_url,
 			'response_url' => $return_url . '&mp_token=' . $token,
 		);
+		$customer_paysley_id = self::updateCustomerOnPaysley($order);
+		if ($customer_paysley_id) {
+			// $body['customer_id'] =  $customer_paysley_id;
+		}
+
+		
 		$log_body                 = $body;
 		$log_body['response_url'] = $return_url . '&mp_token=*****';
-		$this->log( 'get_payment_url - body: ' . wp_json_encode( $log_body ) );
+		$this->log('get_payment_url - body: ' . wp_json_encode($log_body));
 
-		$results = Paysley_API::generate_pos_link( $body );
-		$this->log( 'get_payment_url - results: ' . wp_json_encode( $results ) );
+		$results = Paysley_API::generate_pos_link($body);
+		$this->log('get_payment_url - results: ' . wp_json_encode($results));
 
-		if ( 200 === $results['response']['code'] && 'success' === $results['body']['result'] ) {
+		if (200 === $results['response']['code'] && 'success' === $results['body']['result']) {
 			return $results['body']['long_url'];
 		}
 
-		if ( 422 === $results['response']['code'] && 'currency' === $results['body']['error_field'] ) {
-			throw new Exception( __( 'We are sorry, currency is not supported. Please contact us.', 'paysley' ), 1 );
+		if (422 === $results['response']['code'] && 'currency' === $results['body']['error_field']) {
+			throw new Exception(__('We are sorry, currency is not supported. Please contact us.', 'paysley'), 1);
 		}
 
-		throw new Exception( __( 'Error while Processing Request: please try again.', 'paysley' ), 1 );
+		if (isset($results['body']['error_message'])) {
+			throw new Exception(__('Error while Processing Request: ' . $results['body']['error_message'], 'paysley'), 1);
+		}
+		if (isset($results['body']['message'])) {
+			throw new Exception(__('Error while Processing Request: ' . $results['body']['message'], 'paysley'), 1);
+		}
+
+		throw new Exception(__('Error while Processing Request: please try again.', 'paysley'), 1);
 	}
 
 	/**
@@ -220,28 +261,45 @@ class Paysley extends WC_Payment_Gateway {
 	 * @param int $order_id Order ID.
 	 * @return array
 	 */
-	public function get_cart_items( $order_id ) {
+	public function get_cart_items($order_id)
+	{
 		$cart_items = array();
-		$order      = wc_get_order( $order_id );
+		// $order      = wc_get_order( $order_id );
+		$order      =  new WC_Order($order_id);
 
-		foreach ( $order->get_items() as $item_id => $item ) {
+		foreach ($order->get_items() as $item_id => $item) {
 			$product = $item->get_product();
 			$sku = $product->get_sku();
-			if ( !$sku ) {
+			if (!$sku) {
 				$sku = '-';
 			}
-			$item_total  = isset( $item['recurring_line_total'] ) ? $item['recurring_line_total'] : $order->get_item_total( $item );
-
+			$item_total  = isset($item['recurring_line_total']) ? $item['recurring_line_total'] : $order->get_item_total($item);
+			// $cart_items[] = array(
+			// 	'sku'		 => $sku,
+			// 	'name' 		 => $item->get_name(),
+			// 	'qty'  		 => $item->get_quantity(),
+			// 	'unit_price' => $item_total
+			// );
+			$paysley_product_id = get_post_meta($item['product_id'], 'paysley_product_id', true);
+			if (!$paysley_product_id) {
+				self::updateProductOnPaysley($item['product_id']);
+				$paysley_product_id = get_post_meta($item['product_id'], 'paysley_product_id', true);
+			}
 			$cart_items[] = array(
 				'sku'		 => $sku,
 				'name' 		 => $item->get_name(),
 				'qty'  		 => $item->get_quantity(),
-				'unit_price' => $item_total
+				'sales_price' => $item_total,
+				'unit' => 'pc',
+				'product_service_id' => $paysley_product_id,
+
 			);
 		}
 
 		return $cart_items;
 	}
+
+
 
 	/**
 	 * Override function.
@@ -258,17 +316,20 @@ class Paysley extends WC_Payment_Gateway {
 	 * @param int $order_id Order ID.
 	 * @return array
 	 */
-	public function process_payment( $order_id ) {
-		$order          = wc_get_order( $order_id );
+	public function process_payment($order_id)
+	{
+		global $woocommerce;
+		// $order          = wc_get_order( $order_id );
+		$order          =  new WC_Order($order_id);
 		$transaction_id = 'wc-' . $order->get_order_number();
 		$secret_key     = wc_rand_hash();
-
 		// * save transaction_id and secret_key first before call get_payment_url function.
-		update_post_meta( $order->get_id(), '_paysley_transaction_id', $transaction_id );
-		update_post_meta( $order->get_id(), '_paysley_secret_key', $secret_key );
-
-		$payment_url = $this->get_payment_url( $order_id, $transaction_id );
-
+		// update_post_meta( $order->get_id(), '_paysley_transaction_id', $transaction_id );
+		// update_post_meta( $order->get_id(), '_paysley_secret_key', $secret_key );
+		$order->update_meta_data('_paysley_transaction_id', $transaction_id);
+		$order->update_meta_data('_paysley_secret_key', $secret_key);
+		//$order->save();
+		$payment_url = $this->get_payment_url($order_id, $transaction_id);
 		return array(
 			'result'   => 'success',
 			'redirect' => $payment_url,
@@ -286,26 +347,28 @@ class Paysley extends WC_Payment_Gateway {
 	 * @param  string $reason Refund reason.
 	 * @return boolean True or false based on success, or a WP_Error object.
 	 */
-	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-		$order = wc_get_order( $order_id );
-		if ( $order && 'paysley' === $order->get_payment_method() ) {
-			$payment_id = get_post_meta( $order->get_id(), '_paysley_payment_id', true );
+	public function process_refund($order_id, $amount = null, $reason = '')
+	{
+		// $order = wc_get_order( $order_id );
+		$order =  new WC_Order($order_id);
+		if ($order && 'paysley' === $order->get_payment_method()) {
+			// $payment_id = get_post_meta( $order->get_id(), '_paysley_payment_id', true );
+			$payment_id = $order->get_meta('_paysley_payment_id', true);
 			$body       = array(
 				'email'  => $order->get_billing_email(),
 				'amount' => (float) $amount,
 			);
-			$this->log( 'process_refund - request body ' . wp_json_encode( $body ) );
-			$results = Paysley_API::do_refund( $payment_id, $body );
-			$this->log( 'process_refund - results: ' . wp_json_encode( $results ) );
+			$this->log('process_refund - request body ' . wp_json_encode($body));
+			$results = Paysley_API::do_refund($payment_id, $body);
+			$this->log('process_refund - results: ' . wp_json_encode($results));
 
-			if ( 200 === $results['response']['code'] && 'refund' === $results['body']['status'] ) {
-				$order->add_order_note( __( 'Paysley partial refund successfull.' ) );
-				$this->log( 'process_refund: Success' );
+			if (200 === $results['response']['code'] && 'refund' === $results['body']['status']) {
+				$order->add_order_note(__('Paysley partial refund successfull.'));
+				$this->log('process_refund: Success');
 				return true;
 			}
-
-			$this->log( 'process_refund: Failed' );
-			return new WP_Error( $results['response']['code'], __( 'Refund Failed', 'paysley' ) . ': ' . $results['body']['message'] );
+			$this->log('process_refund: Failed');
+			return new WP_Error($results['response']['code'], __('Refund Failed', 'paysley') . ': ' . $results['body']['message']);
 		}
 	}
 
@@ -315,31 +378,34 @@ class Paysley extends WC_Payment_Gateway {
 	 * @param int    $order_id Order ID.
 	 * @param string $status_to change status to.
 	 */
-	public function process_full_refund( $order_id, $status_to ) {
-		$order = wc_get_order( $order_id );
-		if ( $order && 'paysley' === $order->get_payment_method() ) {
+	public function process_full_refund($order_id, $status_to)
+	{
+		// $order = wc_get_order( $order_id );
+		$order =  new WC_Order($order_id);
+		if ($order && 'paysley' === $order->get_payment_method()) {
 			$status_from = $order->get_status();
 
-			if ( ( 'processing' === $status_from || 'completed' === $status_from ) && 'refunded' === $status_to ) {
-				$amount     = (float) $this->get_order_prop( $order, 'order_total' );
-				$payment_id = get_post_meta( $order->get_id(), '_paysley_payment_id', true );
+			if (('processing' === $status_from || 'completed' === $status_from) && 'refunded' === $status_to) {
+				$amount     = (float) $this->get_order_prop($order, 'order_total');
+				// $payment_id = get_post_meta( $order->get_id(), '_paysley_payment_id', true );
+				$payment_id = $order->get_meta('_paysley_payment_id', true);
 				$body       = array(
 					'email'  => $order->get_billing_email(),
 					'amount' => $amount,
 				);
-				$this->log( 'process_full_refund - request body ' . wp_json_encode( $body ) );
-				$results = Paysley_API::do_refund( $payment_id, $body );
-				$this->log( 'process_full_refund - do_refund results: ' . wp_json_encode( $results ) );
+				$this->log('process_full_refund - request body ' . wp_json_encode($body));
+				$results = Paysley_API::do_refund($payment_id, $body);
+				$this->log('process_full_refund - do_refund results: ' . wp_json_encode($results));
 
-				if ( 200 === $results['response']['code'] && 'refund' === $results['body']['status'] ) {
-					$this->restock_refunded_items( $order );
-					$order->add_order_note( __( 'Paysley full refund successfull.' ) );
-					$this->log( 'process_full_refund: Success' );
+				if (200 === $results['response']['code'] && 'refund' === $results['body']['status']) {
+					$this->restock_refunded_items($order);
+					$order->add_order_note(__('Paysley full refund successfull.'));
+					$this->log('process_full_refund: Success');
 				} else {
-					$this->log( 'process_full_refund: Failed' );
+					$this->log('process_full_refund: Failed');
 					$redirect = get_admin_url() . 'post.php?post=' . $order_id . '&action=edit';
-					WC_Admin_Meta_Boxes::add_error( __( 'Refund Failed', 'paysley' ) . ':' . $results['body']['message'] );
-					wp_safe_redirect( $redirect );
+					WC_Admin_Meta_Boxes::add_error(__('Refund Failed', 'paysley') . ':' . $results['body']['message']);
+					wp_safe_redirect($redirect);
 					exit;
 				}
 			}
@@ -353,18 +419,21 @@ class Paysley extends WC_Payment_Gateway {
 	 * @param string $status_from change status from.
 	 * @param string $status_to change status to.
 	 */
-	public function add_full_refund_notes( $order_id, $status_from, $status_to ) {
-		$order = wc_get_order( $order_id );
-		if ( $order && 'paysley' === $order->get_payment_method() ) {
-			if ( ( 'processing' === $status_from || 'completed' === $status_from ) && 'refunded' === $status_to ) {
-				$order_amount = (float) $this->get_order_prop( $order, 'order_total' );
-				$payment_id   = get_post_meta( $order->get_id(), '_paysley_payment_id', true );
-				$results      = Paysley_API::get_payment( $payment_id );
-				$this->log( 'add_full_refund_notes - get_payment results: ' . wp_json_encode( $results ) );
-				if ( 200 === $results['response']['code'] ) {
+	public function add_full_refund_notes($order_id, $status_from, $status_to)
+	{
+		// $order = wc_get_order( $order_id );
+		$order =  new WC_Order($order_id);
+		if ($order && 'paysley' === $order->get_payment_method()) {
+			if (('processing' === $status_from || 'completed' === $status_from) && 'refunded' === $status_to) {
+				$order_amount = (float) $this->get_order_prop($order, 'order_total');
+				// $payment_id   = get_post_meta( $order->get_id(), '_paysley_payment_id', true );
+				$payment_id = $order->get_meta('_paysley_payment_id', true);
+				$results      = Paysley_API::get_payment($payment_id);
+				$this->log('add_full_refund_notes - get_payment results: ' . wp_json_encode($results));
+				if (200 === $results['response']['code']) {
 					$payment_amount = (float) $results['body']['payment']['amount'];
-					if ( $payment_amount > $order_amount ) {
-						$order->add_order_note( __( 'Paysley notes: You still have amount to be refunded, because Merchant use tax/tip when customer paid. Please contact the merchant to refund the tax/tip amount.' ) );
+					if ($payment_amount > $order_amount) {
+						$order->add_order_note(__('Paysley notes: You still have amount to be refunded, because Merchant use tax/tip when customer paid. Please contact the merchant to refund the tax/tip amount.'));
 					}
 				}
 			}
@@ -376,14 +445,15 @@ class Paysley extends WC_Payment_Gateway {
 	 *
 	 * @param obj $order Order.
 	 */
-	public function restock_refunded_items( $order ) {
+	public function restock_refunded_items($order)
+	{
 		$refunded_line_items = array();
 		$line_items          = $order->get_items();
 
-		foreach ( $line_items as $item_id => $item ) {
-			$refunded_line_items[ $item_id ]['qty'] = $item->get_quantity();
+		foreach ($line_items as $item_id => $item) {
+			$refunded_line_items[$item_id]['qty'] = $item->get_quantity();
 		}
-		wc_restock_refunded_items( $order, $refunded_line_items );
+		wc_restock_refunded_items($order, $refunded_line_items);
 	}
 
 	/**
@@ -395,11 +465,17 @@ class Paysley extends WC_Payment_Gateway {
 	 *
 	 * @return string
 	 */
-	protected function generate_token( $order_id, $currency ) {
-		$transaction_id = get_post_meta( $order_id, '_paysley_transaction_id', true );
-		$secret_key     = get_post_meta( $order_id, '_paysley_secret_key', true );
+	protected function generate_token($order_id, $currency)
+	{
+		// $transaction_id = get_post_meta( $order_id, '_paysley_transaction_id', true );
+		// $secret_key     = get_post_meta( $order_id, '_paysley_secret_key', true );
 
-		return md5( (string) $order_id . $currency . $transaction_id . $secret_key );
+		// $order = wc_get_order( $order_id );
+		$order =  new WC_Order($order_id);
+		$transaction_id = $order->get_meta('_paysley_transaction_id', true);
+		$secret_key = $order->get_meta('_paysley_secret_key', true);
+
+		return md5((string) $order_id . $currency . $transaction_id . $secret_key);
 	}
 
 	/**
@@ -408,65 +484,193 @@ class Paysley extends WC_Payment_Gateway {
 	 *
 	 * @param int $order_id - Order Id.
 	 */
-	public function response_page( $order_id ) {
-		$token = get_query_var( 'mp_token' );
+	public function response_page($order_id)
+	{
+		$token = get_query_var('mp_token');
 
-		if ( ! empty( $token ) ) {
-			$this->log( 'get response from the gateway reponse url' );
-			$response = get_query_var( 'response' );
-			$this->log( 'response_page - original response: ' . $response );
-			$response = json_decode( wp_unslash( $response ), true );
-			$this->log( 'response_page - formated response: ' . wp_json_encode( $response ) );
+		if (!empty($token)) {
+			$this->log('get response from the gateway reponse url');
+			$response = get_query_var('response');
+			$this->log('response_page - original response: ' . $response);
+			$response = json_decode(wp_unslash($response), true);
+			$this->log('response_page - formated response: ' . wp_json_encode($response));
 
 			$payment_status = '';
 			$payment_id     = '';
 			$currency       = '';
 
-			if ( isset( $response['status'] ) ) {
+			if (isset($response['status'])) {
 				$payment_status = $response['status'];
-			} elseif ( isset( $response['result'] ) ) {
+			} elseif (isset($response['result'])) {
 				$payment_status = $response['result'];
 			}
 
-			if ( isset( $response['payment_id'] ) ) {
+			if (isset($response['payment_id'])) {
 				$payment_id = $response['payment_id'];
-			} elseif ( isset( $response['response'] ) && isset( $response['response']['id'] ) ) {
+			} elseif (isset($response['response']) && isset($response['response']['id'])) {
 				$payment_id = $response['response']['id'];
 			}
 
-			if ( isset( $response['currency'] ) ) {
+			if (isset($response['currency'])) {
 				$currency = $response['currency'];
-			} elseif ( isset( $response['response'] ) && isset( $response['response']['currency'] ) ) {
+			} elseif (isset($response['response']) && isset($response['response']['currency'])) {
 				$currency = $response['response']['currency'];
 			}
 
-			$generated_token = $this->generate_token( $order_id, $currency );
-			$order           = wc_get_order( $order_id );
+			$generated_token = $this->generate_token($order_id, $currency);
+			// $order           = wc_get_order( $order_id );
+			$order           =  new WC_Order($order_id);
 
-			if ( $order && 'paysley' === $order->get_payment_method() ) {
-				if ( $token === $generated_token ) {
-					if ( 'ACK' === $payment_status ) {
-						$this->log( 'response_page: update order status to processing' );
+			if ($order && 'paysley' === $order->get_payment_method()) {
+				if ($token === $generated_token) {
+					if ('ACK' === $payment_status) {
+						$this->log('response_page: update order status to processing');
 						$order_status = 'processing';
 						$order_notes  = 'Paysley payment successfull:';
-						update_post_meta( $order->get_id(), '_paysley_payment_id', $payment_id );
-						update_post_meta( $order->get_id(), '_paysley_payment_result', 'succes' );
-						$order->update_status( $order_status, $order_notes );
+						// update_post_meta( $order->get_id(), '_paysley_payment_id', $payment_id );
+						// update_post_meta( $order->get_id(), '_paysley_payment_result', 'succes' );
+
+						$order->update_meta_data('_paysley_payment_id', $payment_id);
+						$order->update_meta_data('_paysley_payment_result', 'succes');
+						//$order->save();
+
+						$order->update_status($order_status, $order_notes);
 					} else {
-						$this->log( 'response_page: update order status to failed' );
+						$this->log('response_page: update order status to failed');
 						$order_status = 'failed';
 						$order_notes  = 'Paysley payment failed:';
-						update_post_meta( $order->get_id(), '_paysley_payment_result', 'failed' );
-						$order->update_status( $order_status, $order_notes );
+						// update_post_meta( $order->get_id(), '_paysley_payment_result', 'failed' );
+						$order->update_status($order_status, $order_notes);
+
+						$order->update_meta_data('_paysley_payment_result', 'failed');
+						//$order->save();
 					}
-					die( 'OK' );
+					die('OK');
 				} else {
-					$this->log( 'response_page: FRAUD detected, token is not same with the generated token' );
+					$this->log('response_page: FRAUD detected, token is not same with the generated token');
 				}
 			}
 		} else {
-			$this->log( 'response_page: go to thank you page' );
+			$this->log('response_page: go to thank you page');
 		}
 	}
 
+	/**
+	 * Create/Update product on paysley
+	 */
+	public static function updateProductOnPaysley($product_id)
+	{
+		//Product Details
+		$product = wc_get_product($product_id);
+		//Product thumbnail
+		$productImage = wp_get_attachment_image_src(get_post_thumbnail_id($product_id), 'single-post-thumbnail');
+		// CategoryId of product
+		$productCategory = self::checkAndCreateProductCategory($product_id);
+		// Product data for paysley
+		$data = [];
+		$data['name'] = $product->name;
+		$data['description'] = $product->description;
+		$data['sku'] = $product->sku;
+		$data['category_id'] = $productCategory;
+		$data['type'] = 'product';
+		$data['manage_inventory'] = $product->manage_stock;
+		$data['unit_in_stock'] = $product->stock_quantity;
+		$data['unit_low_stock'] = $product->low_stock_amount;
+		$data['unit_type'] = 'flat-rate';
+		$data['cost'] = $product->regular_price ? $product->regular_price : $product->price;
+		$data['sales_price'] = $product->price;
+		$data['image'] = $productImage ? $productImage[0] : null;
+		//check if paysley_product_id is already exist
+		$paysley_product_id = get_post_meta($product_id, 'paysley_product_id', true);
+		//if paysley_product_id is already exist then it will update product on paysley else it will create new product on paysley.
+		if ($paysley_product_id) {
+			$data['id'] = $paysley_product_id;
+			// (new self)->log('Updating Product on Payslay: '. wp_json_encode($data));
+			$productResult = Paysley_API::update_product($data);
+			//(new self)->log('Update Product Response: '. wp_json_encode($productResult));
+		} else {
+			// (new self)->log('Creating Product on Payslay: '. wp_json_encode($data));
+			$productResult = Paysley_API::create_product($data);
+			if (200 === $productResult['response']['code'] && 'success' === $productResult['body']['result']) {
+				add_post_meta($product_id, 'paysley_product_id', $productResult['body']['id']);
+			}
+			// (new self)->log('Create Product Response: '. wp_json_encode($productResult));
+		}
+	}
+
+	/**
+	 * Check if category created on paysley.If category is not created then it will create category on paysley.
+	 * It will return CategoryId 
+	 */
+	public static function checkAndCreateProductCategory($product_id)
+	{
+		$productCategory = wp_get_post_terms($product_id, 'product_cat');
+		if (count($productCategory)) {
+			$categoryResult = Paysley_API::category_list($productCategory[0]->name);
+			if (200 === $categoryResult['response']['code'] && 'success' === $categoryResult['body']['result']) {
+				if (count($categoryResult['body']['categories'])) {
+					return $categoryResult['body']['categories'][0]['id'];
+				}
+				$categoryCreateResult = Paysley_API::create_category(['name' => $productCategory[0]->name]);
+				if (200 === $categoryCreateResult['response']['code']) {
+					return $categoryCreateResult['body']['id'];
+				}
+			}
+		}else{
+			// $categoryCreateResult = Paysley_API::create_category(['name' => 'No Category']);
+			// if (200 === $categoryCreateResult['response']['code']) {
+			// 	return $categoryCreateResult['body']['id'];
+			// }
+			$noCategory = 'No Category';
+			$categoryResult = Paysley_API::category_list($noCategory);
+			if (200 === $categoryResult['response']['code'] && 'success' === $categoryResult['body']['result']) {
+				if (count($categoryResult['body']['categories'])) {
+					return $categoryResult['body']['categories'][0]['id'];
+				}
+				$categoryCreateResult = Paysley_API::create_category(['name' => $noCategory]);
+				if (200 === $categoryCreateResult['response']['code']) {
+					return $categoryCreateResult['body']['id'];
+				}
+			}
+		}
+	}
+
+	/**
+	 * Create/Update Customer on paysley
+	 */
+	public static function updateCustomerOnPaysley($order)
+	{
+		$customerPaysleyId = null;
+		$checkIfCustomerExistOnPaysleyResult = Paysley_API::customers($order->get_billing_email());
+		if (200 === $checkIfCustomerExistOnPaysleyResult['response']['code'] && 'success' === $checkIfCustomerExistOnPaysleyResult['body']['result']) {
+			$customerDataToUpdate = [];
+			// Customer billing information details
+			$customerDataToUpdate['email'] = $order->get_billing_email();
+			$customerDataToUpdate['mobile_no'] = $order->get_billing_phone();
+			$customerDataToUpdate['first_name'] = $order->get_billing_first_name();
+			$customerDataToUpdate['last_name'] = $order->get_billing_last_name();
+			$customerDataToUpdate['company_name'] = $order->get_billing_company();
+			$customerDataToUpdate['listing_type'] = 'individual';
+			$customerDataToUpdate['address_line1'] = $order->get_billing_address_1();
+			$customerDataToUpdate['address_line2'] = $order->get_billing_address_2();
+			$customerDataToUpdate['city'] = $order->get_billing_city();
+			$customerDataToUpdate['state'] = $order->get_billing_state();
+			$customerDataToUpdate['postal_code'] = $order->get_billing_postcode();
+			$customerDataToUpdate['country_iso'] = $order->get_billing_country();
+
+			if (count($checkIfCustomerExistOnPaysleyResult['body']['customers'])) {
+				$customer = $checkIfCustomerExistOnPaysleyResult['body']['customers'][0];
+				$customerDataToUpdate['customer_id'] = $customerPaysleyId = $customer['customer_id'];
+				$updateCustomerOnPaysleyResult = Paysley_API::update_customer($customerDataToUpdate);
+				if (200 === $updateCustomerOnPaysleyResult['response']['code'] && 'success' === $updateCustomerOnPaysleyResult['body']['result']) {
+				}
+			} else {
+				$createCustomerOnPaysleyResult = Paysley_API::create_customer($customerDataToUpdate);
+				if (200 === $createCustomerOnPaysleyResult['response']['code'] && 'success' === $createCustomerOnPaysleyResult['body']['result']) {
+					$customerPaysleyId = $createCustomerOnPaysleyResult['body']['customer_id'];
+				}
+			}
+		}
+		return $customerPaysleyId;
+	}
 }
