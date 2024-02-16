@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Paysley 1.0.0\n"
+"Project-Id-Version: Paysley 2.0.0\n"
 "POT-Creation-Date: 2020-04-02 15:11+0700\n"
 "PO-Revision-Date: 2020-09-01 08:22+0700\n"
 "Last-Translator: \n"

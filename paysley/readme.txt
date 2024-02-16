@@ -5,7 +5,7 @@ Tags: credit card, paysley, google pay, apple pay, payment method, payment gatew
 Requires at least: 5.0
 Tested up to: 5.5.3
 Requires PHP: 7.0
-Stable tag: 1.0.0
+Stable tag: 2.0.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -116,3 +116,13 @@ Paysley is a cloud payment solution and offers free access to its developer port
 
 = 1.0.0 2020-04-06 =
 * Initial release
+
+= 1.0.1 - 2021-01-07 =
+* compatibility test wordpress 5.6 & woocoomerce 4.8.0
+
+= 1.0.2 - 2022-01-29 =
+* fix order status for virtual product and download product
+* compatibility test wordpress 5.9
+
+= 2.0.0 - 2024-02-16 =
+* add compatibility for woocommerce checkout block
