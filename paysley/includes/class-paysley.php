@@ -46,9 +46,9 @@ class Paysley extends WC_Payment_Gateway
 		$this->title          = $this->get_option('title');
 		$this->description    = $this->get_option('description');
 		$this->payment_type   = 'DB';
-		$this->access_key     = $this->get_option( 'access_key' );
-		$this->enable_logging = 'yes' === $this->get_option( 'enable_logging' );
-		$this->is_test_mode   = 'py_live' !== substr( $this->access_key, 0, 7 );
+		$this->access_key     = $this->get_option('access_key');
+		$this->enable_logging = 'yes' === $this->get_option('enable_logging');
+		$this->is_test_mode   = 'py_live' !== substr($this->access_key, 0, 7);
 		$this->init_api();
 
 
@@ -198,21 +198,26 @@ class Paysley extends WC_Payment_Gateway
 	 */
 	protected function get_payment_url($order_id, $transaction_id)
 	{
-		// $order      = wc_get_order( $order_id );
 		$order      = new WC_Order($order_id);
 		$currency   = $order->get_currency();
 		$amount     = $this->get_order_prop($order, 'order_total');
 		$token      = $this->generate_token($order_id, $currency);
 		$return_url = $this->get_return_url($order);
 
-		
+		$countryCodePhone = $this->getCountryCode($order->get_billing_country());
+		$customerPhoneNumber = $order->get_billing_phone();
+
+		if($countryCodePhone && strpos($customerPhoneNumber,$countryCodePhone) !== 0 && strlen($customerPhoneNumber) <= 10 ){
+			$customerPhoneNumber = $countryCodePhone.$customerPhoneNumber;
+		}
 
 		$body = array(
 			'reference_number'    => $transaction_id,
 			'payment_type' => $this->payment_type,
 			'request_methods' => ["WEB"],
 			'email' =>  $order->get_billing_email(),
-			'mobile_number' => $order->get_billing_phone(),
+			// 'mobile_number' => $order->get_billing_phone(),
+			'mobile_number' => $customerPhoneNumber,
 			'customer_first_name' => $order->get_billing_first_name(),
 			'customer_last_name' => $order->get_billing_last_name(),
 			'currency'     => $currency,
@@ -228,7 +233,6 @@ class Paysley extends WC_Payment_Gateway
 			// $body['customer_id'] =  $customer_paysley_id;
 		}
 
-		
 		$log_body                 = $body;
 		$log_body['response_url'] = $return_url . '&py_token=*****';
 		$this->log('get_payment_url - body: ' . wp_json_encode($log_body));
@@ -263,7 +267,6 @@ class Paysley extends WC_Payment_Gateway
 	public function get_cart_items($order_id)
 	{
 		$cart_items = array();
-		// $order      = wc_get_order( $order_id );
 		$order      =  new WC_Order($order_id);
 
 		foreach ($order->get_items() as $item_id => $item) {
@@ -273,12 +276,6 @@ class Paysley extends WC_Payment_Gateway
 				$sku = '-';
 			}
 			$item_total  = isset($item['recurring_line_total']) ? $item['recurring_line_total'] : $order->get_item_total($item);
-			// $cart_items[] = array(
-			// 	'sku'		 => $sku,
-			// 	'name' 		 => $item->get_name(),
-			// 	'qty'  		 => $item->get_quantity(),
-			// 	'unit_price' => $item_total
-			// );
 			$paysley_product_id = get_post_meta($item['product_id'], 'paysley_product_id', true);
 			if (!$paysley_product_id) {
 				self::updateProductOnPaysley($item['product_id']);
@@ -318,16 +315,12 @@ class Paysley extends WC_Payment_Gateway
 	public function process_payment($order_id)
 	{
 		global $woocommerce;
-		// $order          = wc_get_order( $order_id );
 		$order          =  new WC_Order($order_id);
 		$transaction_id = 'wc-' . $order->get_order_number();
 		$secret_key     = wc_rand_hash();
 		// * save transaction_id and secret_key first before call get_payment_url function.
-		// update_post_meta( $order->get_id(), '_paysley_transaction_id', $transaction_id );
-		// update_post_meta( $order->get_id(), '_paysley_secret_key', $secret_key );
 		$order->update_meta_data('_paysley_transaction_id', $transaction_id);
 		$order->update_meta_data('_paysley_secret_key', $secret_key);
-		//$order->save();
 		$payment_url = $this->get_payment_url($order_id, $transaction_id);
 		return array(
 			'result'   => 'success',
@@ -348,10 +341,8 @@ class Paysley extends WC_Payment_Gateway
 	 */
 	public function process_refund($order_id, $amount = null, $reason = '')
 	{
-		// $order = wc_get_order( $order_id );
 		$order =  new WC_Order($order_id);
 		if ($order && 'paysley' === $order->get_payment_method()) {
-			// $payment_id = get_post_meta( $order->get_id(), '_paysley_payment_id', true );
 			$payment_id = $order->get_meta('_paysley_payment_id', true);
 			$body       = array(
 				'email'  => $order->get_billing_email(),
@@ -386,7 +377,6 @@ class Paysley extends WC_Payment_Gateway
 
 			if (('processing' === $status_from || 'completed' === $status_from) && 'refunded' === $status_to) {
 				$amount     = (float) $this->get_order_prop($order, 'order_total');
-				// $payment_id = get_post_meta( $order->get_id(), '_paysley_payment_id', true );
 				$payment_id = $order->get_meta('_paysley_payment_id', true);
 				$body       = array(
 					'email'  => $order->get_billing_email(),
@@ -420,7 +410,6 @@ class Paysley extends WC_Payment_Gateway
 	 */
 	public function add_full_refund_notes($order_id, $status_from, $status_to)
 	{
-		// $order = wc_get_order( $order_id );
 		$order =  new WC_Order($order_id);
 		if ($order && 'paysley' === $order->get_payment_method()) {
 			if (('processing' === $status_from || 'completed' === $status_from) && 'refunded' === $status_to) {
@@ -466,10 +455,6 @@ class Paysley extends WC_Payment_Gateway
 	 */
 	protected function generate_token($order_id, $currency)
 	{
-		// $transaction_id = get_post_meta( $order_id, '_paysley_transaction_id', true );
-		// $secret_key     = get_post_meta( $order_id, '_paysley_secret_key', true );
-
-		// $order = wc_get_order( $order_id );
 		$order =  new WC_Order($order_id);
 		$transaction_id = $order->get_meta('_paysley_transaction_id', true);
 		$secret_key = $order->get_meta('_paysley_secret_key', true);
@@ -517,45 +502,36 @@ class Paysley extends WC_Payment_Gateway
 			}
 
 			$generated_token = $this->generate_token($order_id, $currency);
-			// $order           = wc_get_order( $order_id );
 			$order           =  new WC_Order($order_id);
 
-			if ( $order && 'paysley' === $order->get_payment_method() ) {
-				if ( $token === $generated_token ) {
-					if ( 'ACK' === $payment_status ) {
-						
+			if ($order && 'paysley' === $order->get_payment_method()) {
+				if ($token === $generated_token) {
+					if ('ACK' === $payment_status) {
+
 						$order_status = 'completed';
-      
-				      	foreach ($order->get_items() as $order_item){
 
-					        $item = wc_get_product($order_item->get_product_id());
-					        
-					        if (!$item->is_virtual()) {
-					            $order_status = 'processing';;
-					            
-					        }
-				    	}
+						foreach ($order->get_items() as $order_item) {
 
-				    	$this->log( 'response_page: update order status to '.$order_status );
-						
+							$item = wc_get_product($order_item->get_product_id());
+
+							if (!$item->is_virtual()) {
+								$order_status = 'processing';;
+							}
+						}
+
+						$this->log('response_page: update order status to ' . $order_status);
+
 						$order_notes  = 'Paysley payment successfull:';
-						// update_post_meta( $order->get_id(), '_paysley_payment_id', $payment_id );
-						// update_post_meta( $order->get_id(), '_paysley_payment_result', 'succes' );
-
 						$order->update_meta_data('_paysley_payment_id', $payment_id);
 						$order->update_meta_data('_paysley_payment_result', 'succes');
-						//$order->save();
 
 						$order->update_status($order_status, $order_notes);
 					} else {
 						$this->log('response_page: update order status to failed');
 						$order_status = 'failed';
 						$order_notes  = 'Paysley payment failed:';
-						// update_post_meta( $order->get_id(), '_paysley_payment_result', 'failed' );
 						$order->update_status($order_status, $order_notes);
-
 						$order->update_meta_data('_paysley_payment_result', 'failed');
-						//$order->save();
 					}
 					die('OK');
 				} else {
@@ -628,11 +604,7 @@ class Paysley extends WC_Payment_Gateway
 					return $categoryCreateResult['body']['id'];
 				}
 			}
-		}else{
-			// $categoryCreateResult = Paysley_API::create_category(['name' => 'No Category']);
-			// if (200 === $categoryCreateResult['response']['code']) {
-			// 	return $categoryCreateResult['body']['id'];
-			// }
+		} else {
 			$noCategory = 'No Category';
 			$categoryResult = Paysley_API::category_list($noCategory);
 			if (200 === $categoryResult['response']['code'] && 'success' === $categoryResult['body']['result']) {
@@ -655,10 +627,16 @@ class Paysley extends WC_Payment_Gateway
 		$customerPaysleyId = null;
 		$checkIfCustomerExistOnPaysleyResult = Paysley_API::customers($order->get_billing_email());
 		if (200 === $checkIfCustomerExistOnPaysleyResult['response']['code'] && 'success' === $checkIfCustomerExistOnPaysleyResult['body']['result']) {
+			$countryCodePhone = (new self)->getCountryCode($order->get_billing_country());
+			$customerPhoneNumber = $order->get_billing_phone();
+			if($countryCodePhone && strpos($customerPhoneNumber,$countryCodePhone) !== 0 && strlen($customerPhoneNumber) <= 10 ){
+				$customerPhoneNumber = $countryCodePhone.$customerPhoneNumber;
+			}
 			$customerDataToUpdate = [];
 			// Customer billing information details
 			$customerDataToUpdate['email'] = $order->get_billing_email();
-			$customerDataToUpdate['mobile_no'] = $order->get_billing_phone();
+			// $customerDataToUpdate['mobile_no'] = $order->get_billing_phone();
+			$customerDataToUpdate['mobile_no'] = $customerPhoneNumber;
 			$customerDataToUpdate['first_name'] = $order->get_billing_first_name();
 			$customerDataToUpdate['last_name'] = $order->get_billing_last_name();
 			$customerDataToUpdate['company_name'] = $order->get_billing_company();
@@ -684,5 +662,254 @@ class Paysley extends WC_Payment_Gateway
 			}
 		}
 		return $customerPaysleyId;
+	}
+
+	public function getCountryCode($countryCode)
+	{
+		$country_phone_codes = array(
+			'AF' => '+93',
+			'AL' => '+355',
+			'DZ' => '+213',
+			'AS' => '+1-684',
+			'AD' => '+376',
+			'AO' => '+244',
+			'AI' => '+1-264',
+			'AQ' => '+672',
+			'AG' => '+1-268',
+			'AR' => '+54',
+			'AM' => '+374',
+			'AW' => '+297',
+			'AU' => '+61',
+			'AT' => '+43',
+			'AZ' => '+994',
+			'BS' => '+1-242',
+			'BH' => '+973',
+			'BD' => '+880',
+			'BB' => '+1-246',
+			'BY' => '+375',
+			'BE' => '+32',
+			'BZ' => '+501',
+			'BJ' => '+229',
+			'BM' => '+1-441',
+			'BT' => '+975',
+			'BO' => '+591',
+			'BA' => '+387',
+			'BW' => '+267',
+			'BR' => '+55',
+			'IO' => '+246',
+			'VG' => '+1-284',
+			'BN' => '+673',
+			'BG' => '+359',
+			'BF' => '+226',
+			'BI' => '+257',
+			'KH' => '+855',
+			'CM' => '+237',
+			'CA' => '+1',
+			'CV' => '+238',
+			'KY' => '+1-345',
+			'CF' => '+236',
+			'TD' => '+235',
+			'CL' => '+56',
+			'CN' => '+86',
+			'CX' => '+61',
+			'CC' => '+61',
+			'CO' => '+57',
+			'KM' => '+269',
+			'CK' => '+682',
+			'CR' => '+506',
+			'HR' => '+385',
+			'CU' => '+53',
+			'CW' => '+599',
+			'CY' => '+357',
+			'CZ' => '+420',
+			'CD' => '+243',
+			'DK' => '+45',
+			'DJ' => '+253',
+			'DM' => '+1-767',
+			'DO' => '+1-809',
+			'TL' => '+670',
+			'EC' => '+593',
+			'EG' => '+20',
+			'SV' => '+503',
+			'GQ' => '+240',
+			'ER' => '+291',
+			'EE' => '+372',
+			'ET' => '+251',
+			'FK' => '+500',
+			'FO' => '+298',
+			'FJ' => '+679',
+			'FI' => '+358',
+			'FR' => '+33',
+			'PF' => '+689',
+			'GA' => '+241',
+			'GM' => '+220',
+			'GE' => '+995',
+			'DE' => '+49',
+			'GH' => '+233',
+			'GI' => '+350',
+			'GR' => '+30',
+			'GL' => '+299',
+			'GD' => '+1-473',
+			'GU' => '+1-671',
+			'GT' => '+502',
+			'GG' => '+44-1481',
+			'GN' => '+224',
+			'GW' => '+245',
+			'GY' => '+592',
+			'HT' => '+509',
+			'HN' => '+504',
+			'HK' => '+852',
+			'HU' => '+36',
+			'IS' => '+354',
+			'IN' => '+91',
+			'ID' => '+62',
+			'IR' => '+98',
+			'IQ' => '+964',
+			'IE' => '+353',
+			'IM' => '+44-1624',
+			'IL' => '+972',
+			'IT' => '+39',
+			'CI' => '+225',
+			'JM' => '+1-876',
+			'JP' => '+81',
+			'JE' => '+44-1534',
+			'JO' => '+962',
+			'KZ' => '+7',
+			'KE' => '+254',
+			'KI' => '+686',
+			'XK' => '+383',
+			'KW' => '+965',
+			'KG' => '+996',
+			'LA' => '+856',
+			'LV' => '+371',
+			'LB' => '+961',
+			'LS' => '+266',
+			'LR' => '+231',
+			'LY' => '+218',
+			'LI' => '+423',
+			'LT' => '+370',
+			'LU' => '+352',
+			'MO' => '+853',
+			'MK' => '+389',
+			'MG' => '+261',
+			'MW' => '+265',
+			'MY' => '+60',
+			'MV' => '+960',
+			'ML' => '+223',
+			'MT' => '+356',
+			'MH' => '+692',
+			'MR' => '+222',
+			'MU' => '+230',
+			'YT' => '+262',
+			'MX' => '+52',
+			'FM' => '+691',
+			'MD' => '+373',
+			'MC' => '+377',
+			'MN' => '+976',
+			'ME' => '+382',
+			'MS' => '+1-664',
+			'MA' => '+212',
+			'MZ' => '+258',
+			'MM' => '+95',
+			'NA' => '+264',
+			'NR' => '+674',
+			'NP' => '+977',
+			'NL' => '+31',
+			'AN' => '+599',
+			'NC' => '+687',
+			'NZ' => '+64',
+			'NI' => '+505',
+			'NE' => '+227',
+			'NG' => '+234',
+			'NU' => '+683',
+			'KP' => '+850',
+			'MP' => '+1-670',
+			'NO' => '+47',
+			'OM' => '+968',
+			'PK' => '+92',
+			'PW' => '+680',
+			'PS' => '+970',
+			'PA' => '+507',
+			'PG' => '+675',
+			'PY' => '+595',
+			'PE' => '+51',
+			'PH' => '+63',
+			'PN' => '+64',
+			'PL' => '+48',
+			'PT' => '+351',
+			'PR' => '+1-787',
+			'QA' => '+974',
+			'CG' => '+242',
+			'RE' => '+262',
+			'RO' => '+40',
+			'RU' => '+7',
+			'RW' => '+250',
+			'BL' => '+590',
+			'SH' => '+290',
+			'KN' => '+1-869',
+			'LC' => '+1-758',
+			'MF' => '+590',
+			'PM' => '+508',
+			'VC' => '+1-784',
+			'WS' => '+685',
+			'SM' => '+378',
+			'ST' => '+239',
+			'SA' => '+966',
+			'SN' => '+221',
+			'RS' => '+381',
+			'SC' => '+248',
+			'SL' => '+232',
+			'SG' => '+65',
+			'SX' => '+1-721',
+			'SK' => '+421',
+			'SI' => '+386',
+			'SB' => '+677',
+			'SO' => '+252',
+			'ZA' => '+27',
+			'KR' => '+82',
+			'SS' => '+211',
+			'ES' => '+34',
+			'LK' => '+94',
+			'SD' => '+249',
+			'SR' => '+597',
+			'SJ' => '+47',
+			'SZ' => '+268',
+			'SE' => '+46',
+			'CH' => '+41',
+			'SY' => '+963',
+			'TW' => '+886',
+			'TJ' => '+992',
+			'TZ' => '+255',
+			'TH' => '+66',
+			'TG' => '+228',
+			'TK' => '+690',
+			'TO' => '+676',
+			'TT' => '+1-868',
+			'TN' => '+216',
+			'TR' => '+90',
+			'TM' => '+993',
+			'TC' => '+1-649',
+			'TV' => '+688',
+			'VI' => '+1-340',
+			'UG' => '+256',
+			'UA' => '+380',
+			'AE' => '+971',
+			'GB' => '+44',
+			'US' => '+1',
+			'UY' => '+598',
+			'UZ' => '+998',
+			'VU' => '+678',
+			'VA' => '+379',
+			'VE' => '+58',
+			'VN' => '+84',
+			'WF' => '+681',
+			'EH' => '+212',
+			'YE' => '+967',
+			'ZM' => '+260',
+			'ZW' => '+263',
+		);
+
+		return isset($country_phone_codes[$countryCode]) ? $country_phone_codes[$countryCode] : null;
+
 	}
 }
