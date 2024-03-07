@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 	exit; // Exit if accessed directly.
 }
 
-define('PAYSLEY_PLUGIN_VERSION', '2.0.0');
+define('PAYSLEY_PLUGIN_VERSION', '2.0.1');
 
 register_activation_hook(__FILE__, 'paysley_activate_plugin');
 register_uninstall_hook(__FILE__, 'paysley_uninstall_plugin');
