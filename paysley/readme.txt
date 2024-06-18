@@ -5,7 +5,7 @@ Tags: credit card, paysley, google pay, apple pay, payment method, payment gatew
 Requires at least: 5.0
 Tested up to: 6.4.3
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -128,3 +128,6 @@ You can contact developer with this [link](https://paysley.com/contact/).
 
 = 2.0.0 - 2024-02-16 =
 * add compatibility for woocommerce checkout block
+
+= 2.0.1 - 2024-03-07 =
+* fix mobile number

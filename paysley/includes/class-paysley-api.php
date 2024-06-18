@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Paysley API Class
  *
  * @package Paysley
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
 	exit;
 }
 
@@ -14,7 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Paysley_API {
+class Paysley_API
+{
 
 	/**
 	 * API Access Key
@@ -50,8 +52,9 @@ class Paysley_API {
 	 *
 	 * @return string
 	 */
-	public static function get_api_url() {
-		if ( self::$is_test_mode ) {
+	public static function get_api_url()
+	{
+		if (self::$is_test_mode) {
 			return self::$api_test_url;
 		}
 		return self::$api_live_url;
@@ -66,19 +69,20 @@ class Paysley_API {
 	 *
 	 * @return array
 	 */
-	public static function send_request( $url, $body = '', $method = 'GET' ) {
-		$api_args['headers'] = array( 'Authorization' => 'Bearer ' . self::$access_key );
-		if ( 'POST' === $method || 'PUT' === $method ) {
+	public static function send_request($url, $body = '', $method = 'GET')
+	{
+		$api_args['headers'] = array('Authorization' => 'Bearer ' . self::$access_key);
+		if ('POST' === $method || 'PUT' === $method) {
 			$api_args['headers']['Content-Type'] = 'Application/json';
-			$body                                = wp_json_encode( $body );
+			$body                                = wp_json_encode($body);
 		}
-		$api_args['method']  = strtoupper( $method );
+		$api_args['method']  = strtoupper($method);
 		$api_args['body']    = $body;
 		$api_args['timeout'] = 70;
 
-		$results = wp_remote_request( $url, $api_args );
-		if ( is_string( $results['body'] ) ) {
-			$results['body'] = json_decode( $results['body'], true );
+		$results = wp_remote_request($url, $api_args);
+		if (is_string($results['body'])) {
+			$results['body'] = json_decode($results['body'], true);
 		}
 
 		return $results;
@@ -91,9 +95,10 @@ class Paysley_API {
 	 *
 	 * @return array
 	 */
-	public static function generate_pos_link( $body ) {
+	public static function generate_pos_link($body)
+	{
 		$url = self::get_api_url() . '/payment-requests/';
-		return self::send_request( $url, $body, 'POST' );
+		return self::send_request($url, $body, 'POST');
 	}
 
 	/**
@@ -103,9 +108,10 @@ class Paysley_API {
 	 *
 	 * @return array
 	 */
-	public static function get_payment( $payment_id ) {
+	public static function get_payment($payment_id)
+	{
 		$url = self::get_api_url() . '/payments/' . $payment_id;
-		return self::send_request( $url );
+		return self::send_request($url);
 	}
 
 	/**
@@ -116,18 +122,20 @@ class Paysley_API {
 	 *
 	 * @return array
 	 */
-	public static function do_refund( $payment_id, $body ) {
+	public static function do_refund($payment_id, $body)
+	{
 		$url = self::get_api_url() . '/refunds/' . $payment_id;
-		return self::send_request( $url, $body, 'POST' );
+		return self::send_request($url, $body, 'POST');
 	}
 
 
 	/**
 	 * Create new category.
 	 */
-	public static function create_category( $body ) {
+	public static function create_category($body)
+	{
 		$url = self::get_api_url() . '/products-services/category';
-		return self::send_request( $url, $body, 'POST' );
+		return self::send_request($url, $body, 'POST');
 	}
 
 
@@ -137,54 +145,59 @@ class Paysley_API {
 	 *
 	 * @return array
 	 */
-	public static function category_list($category_name=null) {
+	public static function category_list($category_name = null)
+	{
 		$url = self::get_api_url() . '/products-services/category/';
-		if($category_name)
-		$url .= "?keywords=$category_name";
-		return self::send_request( $url );
+		if ($category_name)
+			$url .= "?keywords=$category_name";
+		return self::send_request($url);
 	}
 
 	/**
 	 * Create new Product.
 	 */
-	public static function create_product( $body ) {
+	public static function create_product($body)
+	{
 		$url = self::get_api_url() . '/products-services';
-		return self::send_request( $url, $body, 'POST' );
+		return self::send_request($url, $body, 'POST');
 	}
 
 	/**
 	 * Create new Product.
 	 */
-	public static function update_product( $body ) {
+	public static function update_product($body)
+	{
 		$url = self::get_api_url() . '/products-services';
-		return self::send_request( $url, $body, 'PUT' );
+		return self::send_request($url, $body, 'PUT');
 	}
 
 	/**
 	 * Customer List.
 	 */
-	public static function customers( $searchKeyword=null ) {
+	public static function customers($searchKeyword = null)
+	{
 		$url = self::get_api_url() . '/customers';
-		if($searchKeyword)
+		if ($searchKeyword)
 			$url .= "?keywords=$searchKeyword";
-		return self::send_request( $url );
+		return self::send_request($url);
 	}
 
 
 	/**
 	 * Create new Customer.
 	 */
-	public static function create_customer( $body ) {
+	public static function create_customer($body)
+	{
 		$url = self::get_api_url() . '/customers';
-		return self::send_request( $url, $body, 'POST' );
+		return self::send_request($url, $body, 'POST');
 	}
 
 	/**
 	 * Update Customer.
 	 */
-	public static function update_customer( $body ) {
+	public static function update_customer($body)
+	{
 		$url = self::get_api_url() . '/customers';
-		return self::send_request( $url, $body, 'PUT' );
+		return self::send_request($url, $body, 'PUT');
 	}
-
 }
