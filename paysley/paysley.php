@@ -4,7 +4,7 @@
  * Plugin Name:          Paysley
  * Plugin URI:           https://github.com/PaysleyLLC/paysley-woocommerce
  * Description:          Receive payments using Paysley.
- * Version:              2.0.1
+ * Version:              2.0.3
  * Author:               Paysley
  * Author URI:           https://paysley.com
  * License:              GPL v3 or later
@@ -19,7 +19,8 @@ if (!defined('ABSPATH')) {
 	exit; // Exit if accessed directly.
 }
 
-define('PAYSLEY_PLUGIN_VERSION', '2.0.1');
+
+define('PAYSLEY_PLUGIN_VERSION', '2.0.3');
 
 register_activation_hook(__FILE__, 'paysley_activate_plugin');
 register_uninstall_hook(__FILE__, 'paysley_uninstall_plugin');

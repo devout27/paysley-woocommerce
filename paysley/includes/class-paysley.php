@@ -210,24 +210,25 @@ class Paysley extends WC_Payment_Gateway
 		if($countryCodePhone && strpos($customerPhoneNumber,$countryCodePhone) !== 0 && strlen($customerPhoneNumber) <= 10 ){
 			$customerPhoneNumber = $countryCodePhone.$customerPhoneNumber;
 		}
-
+		$shippingCharges =  $order->get_shipping_total() +  $order->get_shipping_tax();
 		$body = array(
-			'reference_number'    => $transaction_id,
+			'reference_number' => $transaction_id,
 			'payment_type' => $this->payment_type,
 			'request_methods' => ["WEB"],
 			'email' =>  $order->get_billing_email(),
-			// 'mobile_number' => $order->get_billing_phone(),
 			'mobile_number' => $customerPhoneNumber,
 			'customer_first_name' => $order->get_billing_first_name(),
 			'customer_last_name' => $order->get_billing_last_name(),
 			'currency'     => $currency,
 			'amount'       => (float) $amount,
+			'shipping_charges' => $order->get_shipping_total(),
 			'cart_items'   => $this->get_cart_items($order_id),
 			'fixed_amount' => true,
 			'cancel_url'   => wc_get_checkout_url(),
 			'redirect_url' => $return_url,
 			'response_url' => $return_url . '&py_token=' . $token,
 		);
+
 		$customer_paysley_id = self::updateCustomerOnPaysley($order);
 		if ($customer_paysley_id) {
 			// $body['customer_id'] =  $customer_paysley_id;
@@ -268,33 +269,35 @@ class Paysley extends WC_Payment_Gateway
 	{
 		$cart_items = array();
 		$order      =  new WC_Order($order_id);
-
 		foreach ($order->get_items() as $item_id => $item) {
 			$product = $item->get_product();
+			$price = $product->get_price();
+			$tax_rates = WC_Tax::get_rates( $product->get_tax_class() );
+			$taxes = WC_Tax::calc_tax( $price, $tax_rates, false );
+			$total_tax = array_sum( $taxes );
 			$sku = $product->get_sku();
-			if (!$sku) {
-				$sku = '-';
-			}
+			if (!$sku) {$sku = '-';}
 			$item_total  = isset($item['recurring_line_total']) ? $item['recurring_line_total'] : $order->get_item_total($item);
 			$paysley_product_id = get_post_meta($item['product_id'], 'paysley_product_id', true);
 			if (!$paysley_product_id) {
 				self::updateProductOnPaysley($item['product_id']);
 				$paysley_product_id = get_post_meta($item['product_id'], 'paysley_product_id', true);
 			}
+			
 			$cart_items[] = array(
-				'sku'		 => $sku,
-				'name' 		 => $item->get_name(),
-				'qty'  		 => $item->get_quantity(),
-				'sales_price' => $item_total,
-				'unit' => 'pc',
+				'sku'		         => $sku,
+				'name' 		         => $item->get_name(),
+				'qty'  		         => $item->get_quantity(),
+				'sales_price'        => $item_total,
+				'unit'               => 'pc',
 				'product_service_id' => $paysley_product_id,
-
+				"taxable"            => $item->get_tax_status() === "taxable" ? 1: 0,
+				"tax_value"          => $item->get_tax_status() === "taxable" && !empty($total_tax)? $total_tax : 0,
+				"tax_type"           => "fixed_amount"
 			);
 		}
-
 		return $cart_items;
 	}
-
 
 
 	/**
@@ -533,7 +536,6 @@ class Paysley extends WC_Payment_Gateway
 						$order->update_status($order_status, $order_notes);
 						$order->update_meta_data('_paysley_payment_result', 'failed');
 					}
-					die('OK');
 				} else {
 					$this->log('response_page: FRAUD detected, token is not same with the generated token');
 				}
@@ -911,5 +913,16 @@ class Paysley extends WC_Payment_Gateway
 
 		return isset($country_phone_codes[$countryCode]) ? $country_phone_codes[$countryCode] : null;
 
+	}
+
+	public function getProductTax($product){
+		$totalTax = 0;
+		if($product->get_tax_status() === "taxable"){
+			$productTaxes = $product->get_taxes()['total'];
+			foreach($productTaxes as $productTax){
+				$totalTax += floatval($productTax);
+			}
+		}
+		return $totalTax;
 	}
 }
