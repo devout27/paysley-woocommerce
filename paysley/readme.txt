@@ -3,7 +3,7 @@
 Contributors: paysley
 Tags: credit card, paysley, google pay, apple pay, payment method, payment gateway
 Requires at least: 5.0
-Tested up to: 6.4.3
+Tested up to: 6.5.4
 Requires PHP: 7.4
 Stable tag: 2.0.3
 License: GPLv3
