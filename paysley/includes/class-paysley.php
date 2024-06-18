@@ -221,7 +221,7 @@ class Paysley extends WC_Payment_Gateway
 			'customer_last_name' => $order->get_billing_last_name(),
 			'currency'     => $currency,
 			'amount'       => (float) $amount,
-			'shipping_charges' => $order->get_shipping_total(),
+			'shipping_charges' => $shippingCharges,
 			'cart_items'   => $this->get_cart_items($order_id),
 			'fixed_amount' => true,
 			'cancel_url'   => wc_get_checkout_url(),
