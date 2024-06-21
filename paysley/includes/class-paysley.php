@@ -225,7 +225,7 @@ class Paysley extends WC_Payment_Gateway
 			'cart_items'   => $this->get_cart_items($order_id),
 			'fixed_amount' => true,
 			'cancel_url'   => wc_get_checkout_url(),
-			'redirect_url' => $return_url,
+			'redirect_url' => $return_url. '&py_token=' . $token,
 			'response_url' => $return_url . '&py_token=' . $token,
 		);
 
