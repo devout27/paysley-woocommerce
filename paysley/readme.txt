@@ -5,7 +5,7 @@ Tags: credit card, paysley, google pay, apple pay, payment method, payment gatew
 Requires at least: 5.0
 Tested up to: 6.5.4
 Requires PHP: 7.4
-Stable tag: 2.0.3
+Stable tag: 2.0.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -134,3 +134,6 @@ You can contact developer with this [link](https://paysley.com/contact/).
 
 = 2.0.3 - 2024-06-18 =
 * fix shipping and tax
+
+= 2.0.4 - 2024-06-22 =
+* fix order status
