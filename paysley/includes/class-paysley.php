@@ -188,6 +188,97 @@ class Paysley extends WC_Payment_Gateway
 	}
 
 	/**
+	 * Use this generated token to secure get payment status.
+	 * Before call this function make sure _paysley_transaction_id and _paysley_secret_key already saved.
+	 *
+	 * @param int    $order_id - Order Id.
+	 * @param string $currency - Currency.
+	 *
+	 * @return string
+	 */
+	protected function generate_token($order_id, $currency)
+	{
+		$order =  new WC_Order($order_id);
+		$transaction_id = $order->get_meta('_paysley_transaction_id', true);
+		$secret_key = $order->get_meta('_paysley_secret_key', true);
+
+		return md5((string) $order_id . $currency . $transaction_id . $secret_key);
+	}
+
+
+	/**
+	 * Override function.
+	 *
+	 * Send data to the API to get the payment url.
+	 * Redirect user to the payment url.
+	 * This should return the success and redirect in an array. e.g:
+	 *
+	 *        return array(
+	 *            'result'   => 'success',
+	 *            'redirect' => $this->get_return_url( $order )
+	 *        );
+	 *
+	 * @param int $order_id Order ID.
+	 * @return array
+	 */
+	public function process_payment($order_id)
+	{
+		global $woocommerce;
+		$order          =  new WC_Order($order_id);
+		$transaction_id = 'wc-' . $order->get_order_number();
+		$secret_key     = wc_rand_hash();
+		// * save transaction_id and secret_key first before call get_payment_url function.
+		$order->update_meta_data('_paysley_transaction_id', $transaction_id);
+		$order->update_meta_data('_paysley_secret_key', $secret_key);
+		$payment_url = $this->get_payment_url($order_id, $transaction_id);
+		return array(
+			'result'   => 'success',
+			'redirect' => $payment_url,
+		);
+	}
+
+
+	/**
+	 * Get cart items.
+	 *
+	 * @param int $order_id Order ID.
+	 * @return array
+	 */
+	public function get_cart_items($order_id)
+	{
+		$cart_items = array();
+		$order      =  new WC_Order($order_id);
+		foreach ($order->get_items() as $item_id => $item) {
+			$product = $item->get_product();
+			$price = $product->get_price();
+			$tax_rates = WC_Tax::get_rates( $product->get_tax_class() );
+			$taxes = WC_Tax::calc_tax( $price, $tax_rates, false );
+			$total_tax = array_sum( $taxes );
+			$sku = $product->get_sku();
+			if (!$sku) {$sku = '-';}
+			$item_total  = isset($item['recurring_line_total']) ? $item['recurring_line_total'] : $order->get_item_total($item);
+			$paysley_product_id = get_post_meta($item['product_id'], 'paysley_product_id', true);
+			if (!$paysley_product_id) {
+				self::updateProductOnPaysley($item['product_id']);
+				$paysley_product_id = get_post_meta($item['product_id'], 'paysley_product_id', true);
+			}
+			
+			$cart_items[] = array(
+				'sku'		         => $sku,
+				'name' 		         => $item->get_name(),
+				'qty'  		         => $item->get_quantity(),
+				'sales_price'        => $item_total,
+				'unit'               => 'pc',
+				'product_service_id' => $paysley_product_id,
+				"taxable"            => $item->get_tax_status() === "taxable" ? 1: 0,
+				"tax_value"          => $item->get_tax_status() === "taxable" && !empty($total_tax)? $total_tax : 0,
+				"tax_type"           => "fixed_amount"
+			);
+		}
+		return $cart_items;
+	}
+
+	/**
 	 * Get payment url.
 	 *
 	 * @param int    $order_id Order ID.
@@ -260,76 +351,85 @@ class Paysley extends WC_Payment_Gateway
 	}
 
 	/**
-	 * Get cart items.
+	 * Page to handle response from the gateway.
+	 * Get payment status and update order status.
 	 *
-	 * @param int $order_id Order ID.
-	 * @return array
+	 * @param int $order_id - Order Id.
 	 */
-	public function get_cart_items($order_id)
+	public function response_page($order_id)
 	{
-		$cart_items = array();
-		$order      =  new WC_Order($order_id);
-		foreach ($order->get_items() as $item_id => $item) {
-			$product = $item->get_product();
-			$price = $product->get_price();
-			$tax_rates = WC_Tax::get_rates( $product->get_tax_class() );
-			$taxes = WC_Tax::calc_tax( $price, $tax_rates, false );
-			$total_tax = array_sum( $taxes );
-			$sku = $product->get_sku();
-			if (!$sku) {$sku = '-';}
-			$item_total  = isset($item['recurring_line_total']) ? $item['recurring_line_total'] : $order->get_item_total($item);
-			$paysley_product_id = get_post_meta($item['product_id'], 'paysley_product_id', true);
-			if (!$paysley_product_id) {
-				self::updateProductOnPaysley($item['product_id']);
-				$paysley_product_id = get_post_meta($item['product_id'], 'paysley_product_id', true);
+		$token = get_query_var('py_token');
+
+		if (!empty($token)) {
+			$this->log('get response from the gateway reponse url');
+			$response = get_query_var('response');
+			$this->log('response_page - original response: ' . $response);
+			$response = json_decode(wp_unslash($response), true);
+			$this->log('response_page - formated response: ' . wp_json_encode($response));
+
+			$payment_status = '';
+			$payment_id     = '';
+			$currency       = '';
+
+			if (isset($response['status'])) {
+				$payment_status = $response['status'];
+			} elseif (isset($response['result'])) {
+				$payment_status = $response['result'];
 			}
-			
-			$cart_items[] = array(
-				'sku'		         => $sku,
-				'name' 		         => $item->get_name(),
-				'qty'  		         => $item->get_quantity(),
-				'sales_price'        => $item_total,
-				'unit'               => 'pc',
-				'product_service_id' => $paysley_product_id,
-				"taxable"            => $item->get_tax_status() === "taxable" ? 1: 0,
-				"tax_value"          => $item->get_tax_status() === "taxable" && !empty($total_tax)? $total_tax : 0,
-				"tax_type"           => "fixed_amount"
-			);
+
+			if (isset($response['payment_id'])) {
+				$payment_id = $response['payment_id'];
+			} elseif (isset($response['response']) && isset($response['response']['id'])) {
+				$payment_id = $response['response']['id'];
+			}
+
+			if (isset($response['currency'])) {
+				$currency = $response['currency'];
+			} elseif (isset($response['response']) && isset($response['response']['currency'])) {
+				$currency = $response['response']['currency'];
+			}
+
+			$generated_token = $this->generate_token($order_id, $currency);
+			$order           =  new WC_Order($order_id);
+
+			if ($order && 'paysley' === $order->get_payment_method()) {
+				if ($token === $generated_token) {
+					if ('ACK' === $payment_status) {
+
+						$order_status = 'completed';
+
+						foreach ($order->get_items() as $order_item) {
+
+							$item = wc_get_product($order_item->get_product_id());
+
+							if (!$item->is_virtual()) {
+								$order_status = 'processing';;
+							}
+						}
+
+						$this->log('response_page: update order status to ' . $order_status);
+
+						$order_notes  = 'Paysley payment successfull:';
+						$order->update_meta_data('_paysley_payment_id', $payment_id);
+						$order->update_meta_data('_paysley_payment_result', 'succes');
+
+						$order->update_status($order_status, $order_notes);
+					} else {
+						$this->log('response_page: update order status to failed');
+						$order_status = 'failed';
+						$order_notes  = 'Paysley payment failed:';
+						$order->update_status($order_status, $order_notes);
+						$order->update_meta_data('_paysley_payment_result', 'failed');
+					}
+				} else {
+					$this->log('response_page: FRAUD detected, token is not same with the generated token');
+				}
+			}
+		} else {
+			$this->log('response_page: go to thank you page');
 		}
-		return $cart_items;
 	}
 
-
-	/**
-	 * Override function.
-	 *
-	 * Send data to the API to get the payment url.
-	 * Redirect user to the payment url.
-	 * This should return the success and redirect in an array. e.g:
-	 *
-	 *        return array(
-	 *            'result'   => 'success',
-	 *            'redirect' => $this->get_return_url( $order )
-	 *        );
-	 *
-	 * @param int $order_id Order ID.
-	 * @return array
-	 */
-	public function process_payment($order_id)
-	{
-		global $woocommerce;
-		$order          =  new WC_Order($order_id);
-		$transaction_id = 'wc-' . $order->get_order_number();
-		$secret_key     = wc_rand_hash();
-		// * save transaction_id and secret_key first before call get_payment_url function.
-		$order->update_meta_data('_paysley_transaction_id', $transaction_id);
-		$order->update_meta_data('_paysley_secret_key', $secret_key);
-		$payment_url = $this->get_payment_url($order_id, $transaction_id);
-		return array(
-			'result'   => 'success',
-			'redirect' => $payment_url,
-		);
-	}
 
 	/**
 	 * Process partial refund.
@@ -447,103 +547,6 @@ class Paysley extends WC_Payment_Gateway
 		wc_restock_refunded_items($order, $refunded_line_items);
 	}
 
-	/**
-	 * Use this generated token to secure get payment status.
-	 * Before call this function make sure _paysley_transaction_id and _paysley_secret_key already saved.
-	 *
-	 * @param int    $order_id - Order Id.
-	 * @param string $currency - Currency.
-	 *
-	 * @return string
-	 */
-	protected function generate_token($order_id, $currency)
-	{
-		$order =  new WC_Order($order_id);
-		$transaction_id = $order->get_meta('_paysley_transaction_id', true);
-		$secret_key = $order->get_meta('_paysley_secret_key', true);
-
-		return md5((string) $order_id . $currency . $transaction_id . $secret_key);
-	}
-
-	/**
-	 * Page to handle response from the gateway.
-	 * Get payment status and update order status.
-	 *
-	 * @param int $order_id - Order Id.
-	 */
-	public function response_page($order_id)
-	{
-		$token = get_query_var('py_token');
-
-		if (!empty($token)) {
-			$this->log('get response from the gateway reponse url');
-			$response = get_query_var('response');
-			$this->log('response_page - original response: ' . $response);
-			$response = json_decode(wp_unslash($response), true);
-			$this->log('response_page - formated response: ' . wp_json_encode($response));
-
-			$payment_status = '';
-			$payment_id     = '';
-			$currency       = '';
-
-			if (isset($response['status'])) {
-				$payment_status = $response['status'];
-			} elseif (isset($response['result'])) {
-				$payment_status = $response['result'];
-			}
-
-			if (isset($response['payment_id'])) {
-				$payment_id = $response['payment_id'];
-			} elseif (isset($response['response']) && isset($response['response']['id'])) {
-				$payment_id = $response['response']['id'];
-			}
-
-			if (isset($response['currency'])) {
-				$currency = $response['currency'];
-			} elseif (isset($response['response']) && isset($response['response']['currency'])) {
-				$currency = $response['response']['currency'];
-			}
-
-			$generated_token = $this->generate_token($order_id, $currency);
-			$order           =  new WC_Order($order_id);
-
-			if ($order && 'paysley' === $order->get_payment_method()) {
-				if ($token === $generated_token) {
-					if ('ACK' === $payment_status) {
-
-						$order_status = 'completed';
-
-						foreach ($order->get_items() as $order_item) {
-
-							$item = wc_get_product($order_item->get_product_id());
-
-							if (!$item->is_virtual()) {
-								$order_status = 'processing';;
-							}
-						}
-
-						$this->log('response_page: update order status to ' . $order_status);
-
-						$order_notes  = 'Paysley payment successfull:';
-						$order->update_meta_data('_paysley_payment_id', $payment_id);
-						$order->update_meta_data('_paysley_payment_result', 'succes');
-
-						$order->update_status($order_status, $order_notes);
-					} else {
-						$this->log('response_page: update order status to failed');
-						$order_status = 'failed';
-						$order_notes  = 'Paysley payment failed:';
-						$order->update_status($order_status, $order_notes);
-						$order->update_meta_data('_paysley_payment_result', 'failed');
-					}
-				} else {
-					$this->log('response_page: FRAUD detected, token is not same with the generated token');
-				}
-			}
-		} else {
-			$this->log('response_page: go to thank you page');
-		}
-	}
 
 	/**
 	 * Create/Update product on paysley
