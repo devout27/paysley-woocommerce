@@ -138,8 +138,6 @@ class Paysley_API
 		return self::send_request($url, $body, 'POST');
 	}
 
-
-
 	/**
 	 * Get list of categories.
 	 *
@@ -181,7 +179,6 @@ class Paysley_API
 			$url .= "?keywords=$searchKeyword";
 		return self::send_request($url);
 	}
-
 
 	/**
 	 * Create new Customer.
