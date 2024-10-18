@@ -25,13 +25,7 @@ final class WC_Paysley_Blocks extends AbstractPaymentMethodType
         wp_register_script(
             'wc-paysley-blocks-integration',
             plugin_dir_url(__FILE__) . 'block/checkout.js?v=' . time(),
-            [
-                'wc-blocks-registry',
-                'wc-settings',
-                'wp-element',
-                'wp-html-entities',
-                'wp-i18n',
-            ],
+            ['wc-blocks-registry', 'wc-settings', 'wp-element', 'wp-html-entities', 'wp-i18n'],
             true,
             true
         );
